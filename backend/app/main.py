@@ -1,5 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.services.github_service import get_user_repositories
+
 
 app = FastAPI()
 
@@ -18,3 +21,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/api/github/repos")
+def get_github_repos():
+    result = get_user_repositories()
+
+    if not result["success"]:
+        raise HTTPException(
+            status_code=502,
+            detail=result["error"]
+        )
+
+    return result["repositories"]
